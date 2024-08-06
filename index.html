@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 45px;
+            background-color: #e0f7fa;
+        }
+        h1 {
+            color: #00796b;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container > div {
+            flex: 1;
+            margin: 0 10px;
+        }
+        form {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        form div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00796b;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #00796b;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #004d40;
+        }
+        .image-preview {
+            width: 100%;
+            height: auto;
+            border: 2px solid #00796b;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: block;
+        }
+        .result {
+            display: none;
+            white-space: pre-wrap;
+            background-color: #ffffff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .container > div {
+                margin: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Upload</h1>
+    <div class="container">
+        <div>
+            <form id="uploadForm">
+                <input type="file" id="fileInput" accept="image/jpeg,image/png,image/tiff">
+                <button type="submit">Upload</button>
+            </form>
+            <img id="uploadedImage" class="image-preview" alt="Uploaded Image" />
+        </div>
+        <div>
+            <form id="studentForm">
+                <!-- Form fields go here -->
+                <div>
+                    <label for="courseName">Course Name:</label>
+                    <input type="text" id="courseName" name="courseName">
+                </div>
+                <div>
+                    <label for="coursefee">Course Fee:</label>
+                    <input type="text" id="coursefee" name="coursefee">
+                </div>
+                <div>
+                    <label for="timing">Timing:</label>
+                    <input type="text" id="timing" name="timing">
+                </div>
+                <div>
+                    <label for="studentName">Student Name:</label>
+                    <input type="text" id="studentName" name="studentName">
+                </div>
+                <div>
+                    <label for="fatherName">Father's Name:</label>
+                    <input type="text" id="fatherName" name="fatherName">
+                </div>
+                <div>
+                    <label for="motherName">Mother's Name:</label>
+                    <input type="text" id="motherName" name="motherName">
+                </div>
+                <div>
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="day">Day:</label>
+                    <input type="text" id="day" name="day">
+                </div>
+                <div>
+                    <label for="month">Month:</label>
+                    <input type="text" id="month" name="month">
+                </div>
+                <div>
+                    <label for="year">Year:</label>
+                    <input type="text" id="year" name="year">
+                </div>
+                <div>
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="">Select Category</option>
+                        <option value="SC">SC</option>
+                        <option value="ST">ST</option>
+                        <option value="OBC">OBC</option>
+                        <option value="GENERAL">GENERAL</option>
+                        <option value="P/H">P/H</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="occupation">Occupation:</label>
+                    <select id="occupation" name="occupation">
+                        <option value="">Select Occupation</option>
+                        <option value="Employed">Employed</option>
+                        <option value="Unemployed">Unemployed</option>
+                        <option value="Student">Student</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="organizationName">Organization Name:</label>
+                    <input type="text" id="organizationName" name="organizationName">
+                </div>
+                <div>
+                    <label for="schoolCollegeName">School/College Name:</label>
+                    <input type="text" id="schoolCollegeName" name="schoolCollegeName">
+                </div>
+                <div>
+                    <label for="othersDetail">Other Details:</label>
+                    <input type="text" id="othersDetail" name="othersDetail">
+                </div>
+                <div>
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone">
+                </div>
+                <div>
+                    <label for="mobile">Mobile:</label>
+                    <input type="text" id="mobile" name="mobile">
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="text" id="email" name="email">
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="address">
+                </div>
+                <div>
+                    <label for="village">Village:</label>
+                    <input type="text" id="village" name="village">
+                </div>
+                <div>
+                    <label for="block">Block:</label>
+                    <input type="text" id="block" name="block">
+                </div>
+                <div>
+                    <label for="subDivision">Sub Division:</label>
+                    <input type="text" id="subDivision" name="subDivision">
+                </div>
+                <div>
+                    <label for="district">District:</label>
+                    <input type="text" id="district" name="district">
+                </div>
+                <div>
+                    <label for="state">State:</label>
+                    <input type="text" id="state" name="state">
+                </div>
+                <div>
+                    <label for="pincode">Pincode:</label>
+                    <input type="text" id="pincode" name="pincode">
+                </div>
+                <button type="submit">Submit Student Information</button>
+            </form>
+        </div>
+    </div>
+    <div class="result" id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+            const uploadedImage = document.getElementById('uploadedImage');
+            const studentForm = document.getElementById('studentForm');
+
+            if (fileInput.files.length === 0) {
+                resultDiv.textContent = 'Please select a file.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('http://localhost:8000/upload/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('File upload failed');
+                }
+
+                const data = await response.json();
+
+                // Display the uploaded image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+
+                // Display the key-value pairs
+                resultDiv.textContent = JSON.stringify(data.key_value_pairs, null, 2);
+
+                // Fill the student form based on key-value pairs
+                document.getElementById('courseName').value = data.key_value_pairs['Course Interested in :'] || '';
+                document.getElementById('coursefee').value = data.key_value_pairs['Course Fee :'] || '';
+                document.getElementById('timing').value = data.key_value_pairs['Timing :'] || '';
+                document.getElementById('studentName').value = data.key_value_pairs['Name (in block letters) :'] || '';
+                document.getElementById('fatherName').value = data.key_value_pairs["Father's Name (in block letters) :"] || '';
+                document.getElementById('motherName').value = data.key_value_pairs["Mother's Name (in block letters) :"] || '';
+
+                const gender = data.key_value_pairs['Male'] === ':selected:' ? 'Male' : (data.key_value_pairs['Female'] === ':selected:' ? 'Female' : '');
+                document.getElementById('gender').value = gender;
+
+                const dayMonth = data.key_value_pairs['Day'] ? data.key_value_pairs['Day'].split('\n') : [];
+                document.getElementById('day').value = dayMonth[0] || '';
+                document.getElementById('month').value = dayMonth[1] || '';
+
+                document.getElementById('year').value = data.key_value_pairs['Year'] || '';
+
+                const category = ['SC', 'ST', 'OBC', 'GENERAL', 'P/H'].find(c => data.key_value_pairs[c] === ':selected:') || '';
+                document.getElementById('category').value = category;
+
+                const occupation = ['Employed', 'Unemployed', 'Student', 'Others'].find(o => data.key_value_pairs[o] === ':selected:') || '';
+                document.getElementById('occupation').value = occupation;
+
+                document.getElementById('organizationName').value = data.key_value_pairs['(i) Name of School/College/University :'] || '';
+                document.getElementById('schoolCollegeName').value = data.key_value_pairs['(i) Name of School/College/University :'] || '';
+                document.getElementById('othersDetail').value = data.key_value_pairs['Others'] || '';
+                document.getElementById('phone').value = data.key_value_pairs['Phone :'] || '';
+                document.getElementById('mobile').value = data.key_value_pairs['Mobile :'] || '';
+                document.getElementById('email').value = data.key_value_pairs['E-mail :'] || '';
+                document.getElementById('address').value = data.key_value_pairs['Address for Correspondence :'] || '';
+                document.getElementById('village').value = data.key_value_pairs['Name of'] || '';
+                document.getElementById('block').value = '';  // No matching key found in the example
+                document.getElementById('subDivision').value = '';  // No matching key found in the example
+                document.getElementById('district').value = data.key_value_pairs['District'] || '';
+                document.getElementById('state').value = data.key_value_pairs['State'] || '';
+                document.getElementById('pincode').value = data.key_value_pairs['Pin Code'] || '';
+
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
