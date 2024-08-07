@@ -238,83 +238,83 @@
 
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const fileInput = document.getElementById('fileInput');
-            const resultDiv = document.getElementById('result');
-            const uploadedImage = document.getElementById('uploadedImage');
-            const studentForm = document.getElementById('studentForm');
+    event.preventDefault();
+    const fileInput = document.getElementById('fileInput');
+    const resultDiv = document.getElementById('result');
+    const uploadedImage = document.getElementById('uploadedImage');
+    const studentForm = document.getElementById('studentForm');
 
-            if (fileInput.files.length === 0) {
-                resultDiv.textContent = 'Please select a file.';
-                return;
-            }
+    if (fileInput.files.length === 0) {
+        resultDiv.textContent = 'Please select a file.';
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
 
-            try {
-                const response = await fetch('http://localhost:8000/upload/', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    throw new Error('File upload failed');
-                }
-
-                const data = await response.json();
-
-                // Display the uploaded image
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImage.src = e.target.result;
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-
-                // Display the key-value pairs
-                resultDiv.textContent = JSON.stringify(data.key_value_pairs, null, 2);
-
-                // Fill the student form based on key-value pairs
-                document.getElementById('courseName').value = data.key_value_pairs['Course Interested in :'] || '';
-                document.getElementById('coursefee').value = data.key_value_pairs['Course Fee :'] || '';
-                document.getElementById('timing').value = data.key_value_pairs['Timing :'] || '';
-                document.getElementById('studentName').value = data.key_value_pairs['Name (in block letters) :'] || '';
-                document.getElementById('fatherName').value = data.key_value_pairs["Father's Name (in block letters) :"] || '';
-                document.getElementById('motherName').value = data.key_value_pairs["Mother's Name (in block letters) :"] || '';
-
-                const gender = data.key_value_pairs['Male'] === ':selected:' ? 'Male' : (data.key_value_pairs['Female'] === ':selected:' ? 'Female' : '');
-                document.getElementById('gender').value = gender;
-
-                const dayMonth = data.key_value_pairs['Day'] ? data.key_value_pairs['Day'].split('\n') : [];
-                document.getElementById('day').value = dayMonth[0] || '';
-                document.getElementById('month').value = dayMonth[1] || '';
-
-                document.getElementById('year').value = data.key_value_pairs['Year'] || '';
-
-                const category = ['SC', 'ST', 'OBC', 'GENERAL', 'P/H'].find(c => data.key_value_pairs[c] === ':selected:') || '';
-                document.getElementById('category').value = category;
-
-                const occupation = ['Employed', 'Unemployed', 'Student', 'Others'].find(o => data.key_value_pairs[o] === ':selected:') || '';
-                document.getElementById('occupation').value = occupation;
-
-                document.getElementById('organizationName').value = data.key_value_pairs['(i) Name of School/College/University :'] || '';
-                document.getElementById('schoolCollegeName').value = data.key_value_pairs['(i) Name of School/College/University :'] || '';
-                document.getElementById('othersDetail').value = data.key_value_pairs['Others'] || '';
-                document.getElementById('phone').value = data.key_value_pairs['Phone :'] || '';
-                document.getElementById('mobile').value = data.key_value_pairs['Mobile :'] || '';
-                document.getElementById('email').value = data.key_value_pairs['E-mail :'] || '';
-                document.getElementById('address').value = data.key_value_pairs['Address for Correspondence :'] || '';
-                document.getElementById('village').value = data.key_value_pairs['Name of'] || '';
-                document.getElementById('block').value = '';  // No matching key found in the example
-                document.getElementById('subDivision').value = '';  // No matching key found in the example
-                document.getElementById('district').value = data.key_value_pairs['District'] || '';
-                document.getElementById('state').value = data.key_value_pairs['State'] || '';
-                document.getElementById('pincode').value = data.key_value_pairs['Pin Code'] || '';
-
-            } catch (error) {
-                resultDiv.textContent = `Error: ${error.message}`;
-            }
+    try {
+        const response = await fetch('http://localhost:8000/upload/', {
+            method: 'POST',
+            body: formData,
         });
+
+        if (!response.ok) {
+            throw new Error('File upload failed');
+        }
+
+        const data = await response.json();
+
+        // Display the uploaded image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImage.src = e.target.result;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+
+        // Display the field values
+        resultDiv.textContent = JSON.stringify(data.field_values, null, 2);
+
+        // Fill the student form based on field values
+        document.getElementById('courseName').value = data.field_values['Course Interested in'] || '';
+        document.getElementById('coursefee').value = data.field_values['Course Fee'] || '';
+        document.getElementById('timing').value = data.field_values['Timing'] || '';
+        document.getElementById('studentName').value = `${data.field_values['Name1'] || ''}`.trim();
+        document.getElementById('fatherName').value = `${data.field_values['FatherName1'] || ''} ${data.field_values['FatherName2'] || ''}`.trim();
+        document.getElementById('motherName').value = `${data.field_values['MotherName1'] || ''} ${data.field_values['MotherName2'] || ''}`.trim();
+
+        // Gender
+        document.getElementById('gender').value = data.field_values['male'] === 'selected' ? 'Male' : (data.field_values['female'] === 'selected' ? 'Female' : '');
+
+        // Date of Birth
+        document.getElementById('day').value = data.field_values['day'] || '';
+        document.getElementById('month').value = data.field_values['month'] || '';
+        document.getElementById('year').value = data.field_values['year'] || '';
+
+        // Category
+        document.getElementById('category').value = ['SC', 'ST', 'OBC', 'General', 'P/H'].find(c => data.field_values[c] === 'selected') || '';
+
+        // Occupation
+        document.getElementById('occupation').value = ['Employed', 'Unemployed', 'Student', 'Others'].find(o => data.field_values[o.toLowerCase()] === 'selected') || '';
+
+        // Additional Fields
+        document.getElementById('schoolCollegeName').value = data.field_values['school'] || '';
+        document.getElementById('othersDetail').value = data.field_values['others'] || '';
+        document.getElementById('phone').value = data.field_values['phone'] || '';
+        document.getElementById('mobile').value = data.field_values['mobile'] || '';
+        document.getElementById('email').value = data.field_values['email'] || '';
+        document.getElementById('address').value = data.field_values['Address'] || '';
+        document.getElementById('village').value = data.field_values['Village'] || '';
+        document.getElementById('block').value = data.field_values['Block'] || '';
+        document.getElementById('subDivision').value = data.field_values['subdivision'] || '';
+        document.getElementById('district').value = data.field_values['district'] || '';
+        document.getElementById('state').value = data.field_values['State'] || '';
+        document.getElementById('pincode').value = data.field_values['pincode'] || '';
+
+    } catch (error) {
+        resultDiv.textContent = `Error: ${error.message}`;
+    }
+});
+
     </script>
 </body>
 </html>
