@@ -106,7 +106,8 @@
         <div>
             <form id="uploadForm">
                 <input type="file" id="fileInput" accept="image/jpeg,image/png,image/tiff">
-                <button type="submit">Upload</button>
+                <button type="submit" style="margin-top: 10px;" >Upload</button>
+                <button type="button" id="exportCsv" style="margin-top: 10px;">Export to CSV</button>
             </form>
             <img id="uploadedImage" class="image-preview" alt="Uploaded Image" />
         </div>
@@ -235,85 +236,114 @@
         </div>
     </div>
     <div class="result" id="result"></div>
+    
 
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const fileInput = document.getElementById('fileInput');
-    const resultDiv = document.getElementById('result');
-    const uploadedImage = document.getElementById('uploadedImage');
-    const studentForm = document.getElementById('studentForm');
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+            const uploadedImage = document.getElementById('uploadedImage');
+            const studentForm = document.getElementById('studentForm');
 
-    if (fileInput.files.length === 0) {
-        resultDiv.textContent = 'Please select a file.';
-        return;
-    }
+            if (fileInput.files.length === 0) {
+                resultDiv.textContent = 'Please select a file.';
+                return;
+            }
 
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
 
-    try {
-        const response = await fetch('http://localhost:8000/upload/', {
-            method: 'POST',
-            body: formData,
+            try {
+                const response = await fetch('http://localhost:8000/upload/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('File upload failed');
+                }
+
+                const data = await response.json();
+
+                // Display the uploaded image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+
+                // Display the field values
+                resultDiv.textContent = JSON.stringify(data.field_values, null, 2);
+
+                // Fill the student form based on field values
+                document.getElementById('courseName').value = data.field_values['Course Interested in'] || '';
+                document.getElementById('coursefee').value = data.field_values['Course Fee'] || '';
+                document.getElementById('timing').value = data.field_values['Timing'] || '';
+                document.getElementById('studentName').value = `${data.field_values['Name1'] || ''}`.trim();
+                document.getElementById('fatherName').value = `${data.field_values['FatherName1'] || ''} ${data.field_values['FatherName2'] || ''}`.trim();
+                document.getElementById('motherName').value = `${data.field_values['MotherName1'] || ''} ${data.field_values['MotherName2'] || ''}`.trim();
+
+                // Gender
+                document.getElementById('gender').value = data.field_values['male'] === 'selected' ? 'Male' : (data.field_values['female'] === 'selected' ? 'Female' : '');
+
+                // Date of Birth
+                document.getElementById('day').value = data.field_values['day'] || '';
+                document.getElementById('month').value = data.field_values['month'] || '';
+                document.getElementById('year').value = data.field_values['year'] || '';
+
+                // Category
+                document.getElementById('category').value = ['SC', 'ST', 'OBC', 'General', 'P/H'].find(c => data.field_values[c] === 'selected') || '';
+
+                // Occupation
+                document.getElementById('occupation').value = ['Employed', 'Unemployed', 'Student', 'Others'].find(o => data.field_values[o.toLowerCase()] === 'selected') || '';
+
+                // Additional Fields
+                document.getElementById('schoolCollegeName').value = data.field_values['school'] || '';
+                document.getElementById('othersDetail').value = data.field_values['others'] || '';
+                document.getElementById('phone').value = data.field_values['phone'] || '';
+                document.getElementById('mobile').value = data.field_values['mobile'] || '';
+                document.getElementById('email').value = data.field_values['email'] || '';
+                document.getElementById('address').value = data.field_values['Address'] || '';
+                document.getElementById('village').value = data.field_values['Village'] || '';
+                document.getElementById('block').value = data.field_values['Block'] || '';
+                document.getElementById('subDivision').value = data.field_values['subdivision'] || '';
+                document.getElementById('district').value = data.field_values['district'] || '';
+                document.getElementById('state').value = data.field_values['State'] || '';
+                document.getElementById('pincode').value = data.field_values['pincode'] || '';
+
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
         });
+    
+        document.getElementById('exportCsv').addEventListener('click', () => {
+        const form = document.getElementById('studentForm');
+        const fields = form.elements;
+        let csvContent = "data:text/csv;charset=utf-8,";
 
-        if (!response.ok) {
-            throw new Error('File upload failed');
-        }
+        // Create CSV header
+        const headers = Array.from(fields).filter(field => field.name).map(field => field.name);
+        csvContent += headers.join(",") + "\n";
 
-        const data = await response.json();
+        // Create CSV row
+        const row = headers.map(header => {
+            const field = form.querySelector(`[name="${header}"]`);
+            return field ? field.value : "";
+        }).join(",");
+        csvContent += row + "\n";
 
-        // Display the uploaded image
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            uploadedImage.src = e.target.result;
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+        // Create a downloadable link
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "form_values.csv");
+        document.body.appendChild(link);
 
-        // Display the field values
-        resultDiv.textContent = JSON.stringify(data.field_values, null, 2);
+        // Simulate a click on the link to trigger the download
+        link.click();
+    });
 
-        // Fill the student form based on field values
-        document.getElementById('courseName').value = data.field_values['Course Interested in'] || '';
-        document.getElementById('coursefee').value = data.field_values['Course Fee'] || '';
-        document.getElementById('timing').value = data.field_values['Timing'] || '';
-        document.getElementById('studentName').value = `${data.field_values['Name1'] || ''}`.trim();
-        document.getElementById('fatherName').value = `${data.field_values['FatherName1'] || ''} ${data.field_values['FatherName2'] || ''}`.trim();
-        document.getElementById('motherName').value = `${data.field_values['MotherName1'] || ''} ${data.field_values['MotherName2'] || ''}`.trim();
-
-        // Gender
-        document.getElementById('gender').value = data.field_values['male'] === 'selected' ? 'Male' : (data.field_values['female'] === 'selected' ? 'Female' : '');
-
-        // Date of Birth
-        document.getElementById('day').value = data.field_values['day'] || '';
-        document.getElementById('month').value = data.field_values['month'] || '';
-        document.getElementById('year').value = data.field_values['year'] || '';
-
-        // Category
-        document.getElementById('category').value = ['SC', 'ST', 'OBC', 'General', 'P/H'].find(c => data.field_values[c] === 'selected') || '';
-
-        // Occupation
-        document.getElementById('occupation').value = ['Employed', 'Unemployed', 'Student', 'Others'].find(o => data.field_values[o.toLowerCase()] === 'selected') || '';
-
-        // Additional Fields
-        document.getElementById('schoolCollegeName').value = data.field_values['school'] || '';
-        document.getElementById('othersDetail').value = data.field_values['others'] || '';
-        document.getElementById('phone').value = data.field_values['phone'] || '';
-        document.getElementById('mobile').value = data.field_values['mobile'] || '';
-        document.getElementById('email').value = data.field_values['email'] || '';
-        document.getElementById('address').value = data.field_values['Address'] || '';
-        document.getElementById('village').value = data.field_values['Village'] || '';
-        document.getElementById('block').value = data.field_values['Block'] || '';
-        document.getElementById('subDivision').value = data.field_values['subdivision'] || '';
-        document.getElementById('district').value = data.field_values['district'] || '';
-        document.getElementById('state').value = data.field_values['State'] || '';
-        document.getElementById('pincode').value = data.field_values['pincode'] || '';
-
-    } catch (error) {
-        resultDiv.textContent = `Error: ${error.message}`;
-    }
-});
 
     </script>
 </body>
