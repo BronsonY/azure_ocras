@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine, SessionLocal
 import uvicorn
+from typing import List
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,7 +26,6 @@ origins = [
     "http://localhost",
     "http://localhost:8000",
     "*"
-    # Add more origins if needed
 ]
 
 app.add_middleware(
@@ -104,76 +104,66 @@ document_intelligence_client = DocumentAnalysisClient(
 A4_WIDTH_PIXELS = 1240
 A4_HEIGHT_PIXELS = 1754
 
-
-
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_files(files: List[UploadFile] = File(...)):
+    all_results = []
     try:
-        # Validate the file format
-        if file.content_type not in ["image/jpeg", "image/png", "image/tiff"]:
-            raise HTTPException(status_code=400, detail="Invalid file format")
+        print(f"Number of files received: {len(files)}")
+        for file in files:
+            print(f"Received file: {file.filename}, type: {file.content_type}")
 
-        # Read the uploaded file
-        file_content = await file.read()
+            # Validate the file format
+            if file.content_type not in ["image/jpeg", "image/png", "image/tiff"]:
+                raise HTTPException(status_code=400, detail="Invalid file format")
 
-        # Open the image using Pillow
-        image = Image.open(BytesIO(file_content))
+            # Read the uploaded file
+            file_content = await file.read()
 
-        # Convert RGBA to RGB if necessary
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
+            # Open the image using Pillow
+            image = Image.open(BytesIO(file_content))
 
-        # Resize the image to fit within A4 dimensions while maintaining aspect ratio
-        image.thumbnail((A4_WIDTH_PIXELS, A4_HEIGHT_PIXELS))
+            # Convert RGBA to RGB if necessary
+            if image.mode == 'RGBA':
+                image = image.convert('RGB')
 
-        # Convert to JPEG to apply compression and reduce file size
-        compressed_image_stream = BytesIO()
-        image.save(compressed_image_stream, format="JPEG", quality=85)
-        compressed_image_stream.seek(0)
+            # Resize the image to fit within A4 dimensions while maintaining aspect ratio
+            image.thumbnail((A4_WIDTH_PIXELS, A4_HEIGHT_PIXELS))
 
-        model_id = "testmodel2"  # Replace with your custom model ID
-        poller = document_intelligence_client.begin_analyze_document(
-            model_id=model_id,
-            document=compressed_image_stream
-        )
-        result = poller.result()
+            # Convert to JPEG to apply compression and reduce file size
+            compressed_image_stream = BytesIO()
+            image.save(compressed_image_stream, format="JPEG", quality=85)
+            compressed_image_stream.seek(0)
 
-        # # Extract key-value pairs
-        # key_value_pairs = {}
-        # kv_pairs = list(result.key_value_pairs)  # Convert to list to access by index
-        # for kv_pair in kv_pairs[3:]:  # Skip the first two pairs
-        #     if kv_pair.key and kv_pair.value:
-        #         processed_key = preprocess_key(kv_pair.key.content)
-        #         closest_key = find_closest_key(processed_key, key_value_pairs.keys())
-        #         if closest_key:
-        #             key_value_pairs[closest_key] = kv_pair.value.content
-        #         else:
-        #             key_value_pairs[processed_key] = kv_pair.value.content
+            model_id = "testmodel2"  # Replace with your custom model ID
+            poller = document_intelligence_client.begin_analyze_document(
+                model_id=model_id,
+                document=compressed_image_stream
+            )
+            result = poller.result()
 
-        # # Return the key-value pairs in the response
-        # print(key_value_pairs)
-        # return {"key_value_pairs": key_value_pairs}
+            # Initialize a dictionary to hold field values
+            field_values = {}
 
-        # Initialize a dictionary to hold field values
-        field_values = {}
+            # Analyze the result and extract field values
+            for idx, document in enumerate(result.documents):
+                print("--------Analyzing document #{}--------".format(idx + 1))
+                print("Document has type {}".format(document.doc_type))
+                print("Document has confidence {}".format(document.confidence))
+                print("Document was analyzed by model with ID {}".format(result.model_id))
+                for name, field in document.fields.items():
+                    field_value = field.value if field.value else field.content
+                    print("......found field of type '{}' with value '{}' and with confidence {}".format(field.value_type, field_value, field.confidence))
+                    field_values[name] = field_value
 
-        # Analyze the result and extract field values
-        for idx, document in enumerate(result.documents):
-            print("--------Analyzing document #{}--------".format(idx + 1))
-            print("Document has type {}".format(document.doc_type))
-            print("Document has confidence {}".format(document.confidence))
-            print("Document was analyzed by model with ID {}".format(result.model_id))
-            for name, field in document.fields.items():
-                field_value = field.value if field.value else field.content
-                print("......found field of type '{}' with value '{}' and with confidence {}".format(field.value_type, field_value, field.confidence))
-                field_values[name] = field_value  # Add the field value to the dictionary
+            all_results.append(field_values)
 
         # Return the extracted field values in the response
-        return {"field_values": field_values}
+        return {"field_values": all_results}
 
     except Exception as e:
+        print(f"Exception: {str(e)}")  # Print the exception for debugging
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 def preprocess_key(key):
     # Remove numbers and special characters
     return re.sub(r"\d+\.?\s?", "", key).strip()
